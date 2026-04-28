@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Birthday Surprise 🎉</title>
+  <style>
+    body {
+      margin: 0; font-family: 'Segoe UI', sans-serif; text-align: center;
+      color: white; background: linear-gradient(135deg, #1e3c72, #2a5298);
+      overflow-x: hidden; height: 100vh;
+    }
+    .page { display: none; padding-top: 60px; }
+    .active { display: block; }
+    .card {
+      background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+      padding: 25px; margin: auto; border-radius: 20px;
+      width: 85%; max-width: 380px; border: 1px solid rgba(255,255,255,0.2);
+    }
+    input {
+      padding: 12px; border-radius: 10px; border: none;
+      text-align: center; font-size: 18px; width: 150px; margin-bottom: 10px;
+    }
+    button {
+      background: #00d2ff; color: white; padding: 12px 25px;
+      border: none; border-radius: 10px; font-weight: bold;
+      cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    #startOverlay {
+      position: fixed; inset: 0; background: #1e3c72;
+      display: flex; flex-direction: column; justify-content: center;
+      align-items: center; z-index: 100;
+    }
+    #countdown { font-size: 80px; font-weight: bold; transition: transform 0.2s; }
+    /* Hide the YouTube player */
+    #youtube-player { position: absolute; top: -9999px; left: -9999px; }
+  </style>
+</head>
+<body>
+
+<div id="startOverlay">
+  <h1>A small surprise for you 🎁</h1>
+  <p>Please turn up your volume 🔊</p>
+  <button onclick="initSite()">Open</button>
+</div>
+
+<div id="page1" class="page">
+  <div class="card">
+    <h2>🔐 Enter Code</h2>
+    <p style="font-size: 0.8em; opacity: 0.7;">(Hint: 1234)</p>
+    <input type="password" id="passInput" maxlength="4" placeholder="****">
+    <br>
+    <button onclick="checkPassword()">Unlock</button>
+    <p id="errorMsg" style="color:#ff4d4d; display:none; font-weight:bold;">Wrong password!</p>
+  </div>
+</div>
+
+<div id="page2" class="page">
+  <div class="card">
+    <h1>🎂 Happy Birthday 🎂</h1>
+    <p>Wishing you a day full of happiness and a year full of good moments.</p>
+    <button onclick="nextPage()">Continue ➡️</button>
+  </div>
+</div>
+
+<div id="pageCount" class="page">
+  <h1 id="countdown">3</h1>
+</div>
+
+<div id="pageWish" class="page">
+  <h1 style="font-size:45px; text-shadow: 2px 2px 10px rgba(0,0,0,0.5);">🎉 HAPPY BIRTHDAY 🎉</h1>
+  <p>This moment is yours ✨</p>
+</div>
+
+<div id="youtube-player"></div>
+<audio id="tickSound" preload="auto">
+  <source src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+let player;
+const tick = document.getElementById("tickSound");
+
+// Load the YouTube IFrame API
+var tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('youtube-player', {
+    height: '0',
+    width: '0',
+    videoId: '5u4xTa3LR2U', // Your requested song ID
+    playerVars: {
+      'autoplay': 0,
+      'controls': 0,
+      'loop': 1,
+      'playlist': '5u4xTa3LR2U'
+    },
+    events: {
+      'onReady': onPlayerReady
+    }
+  });
+}
+
+function onPlayerReady(event) {
+  console.log("YouTube Player Ready");
+}
+
+function initSite(){
+  document.getElementById("startOverlay").style.display="none";
+  showPage("page1");
+  
+  // Prime the tick sound
+  tick.play().then(() => {
+    tick.pause();
+    tick.currentTime = 0;
+  });
+}
+
+function checkPassword(){
+  if(document.getElementById("passInput").value === "1234"){
+    showPage("page2");
+  } else {
+    document.getElementById("errorMsg").style.display="block";
+  }
+}
+
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function nextPage(){
+  showPage("pageCount");
+  
+  let count = 3;
+  let el = document.getElementById("countdown");
+  
+  // Play first tick
+  tick.currentTime = 0;
+  tick.play();
+
+  let i = setInterval(()=>{
+    count--;
+    
+    if(count > 0) {
+        tick.currentTime = 0;
+        tick.play();
+    }
+    
+    el.innerText = count;
+    el.style.transform="scale(1.5)";
+    setTimeout(()=>el.style.transform="scale(1)", 200);
+
+    if(count === 0){
+      clearInterval(i);
+      setTimeout(()=>{
+        showPage("pageWish");
+        // Play the YouTube Song
+        if (player && player.playVideo) {
+          player.playVideo();
+        }
+      }, 500);
+    }
+  }, 1000);
+}
+</script>
+</body>
+</html>
